@@ -79,21 +79,31 @@ namespace WpfBehaviours.Modules.Dealing
                 "SpotTileViewModelController", new HierarchicalLifetimeManager());
 
             //viewmodel controller factories
-            childContainer.RegisterType<Func<SpotTileViewModel, IViewModelController>>(
-                new HierarchicalLifetimeManager(),
-                new InjectionFactory(c =>
-                    new Func<SpotTileViewModel, IViewModelController>(
-                        viewModel =>
-                            c.Resolve<IViewModelController>("SpotTileViewModelController",
-                                new DependencyOverride<SpotTileViewModel>(viewModel)))));
+            //childContainer.RegisterType<Func<SpotTileViewModel, IViewModelController>>(
+            //    new HierarchicalLifetimeManager(),
+            //    new InjectionFactory(c =>
+            //        new Func<SpotTileViewModel, IViewModelController>(
+            //            viewModel =>
+            //                c.Resolve<IViewModelController>("SpotTileViewModelController",
+            //                    new DependencyOverride<SpotTileViewModel>(viewModel)))));
 
+            childContainer.RegisterType<Func<SpotTileViewModel, IViewModelController>>(new HierarchicalLifetimeManager(),
+                new InjectionFactory(container =>
+                {
+                    return new Func<SpotTileViewModel, IViewModelController>(vm =>
+                        container.Resolve<IViewModelController>(nameof(SpotTileViewModelController),
+                            new DependencyOverride<SpotTileViewModel>(vm)));
+                }));
             //behaviours
-            childContainer.RegisterType<ISpotTileViewModelBehaviour, LoadFakeSpotCCYPairsBehaviour>("LoadFakeSpotCCYPairsBehaviour", new HierarchicalLifetimeManager());
-            childContainer.RegisterType<ISpotTileViewModelBehaviour, MonitorFakePairBehaviour>("MonitorFakePairBehaviour", new HierarchicalLifetimeManager());
-            childContainer.RegisterType<ISpotTileViewModelBehaviour, OkCommandBehaviour>("OkCommandBehaviour", new HierarchicalLifetimeManager());
-            childContainer.RegisterType<ISpotTileViewModelBehaviour, TimeoutBehaviour>("TimeoutBehaviour", new HierarchicalLifetimeManager());
-            
-            
+            //childContainer.RegisterType<ISpotTileViewModelBehaviour, LoadFakeSpotCCYPairsBehaviour>("LoadFakeSpotCCYPairsBehaviour", new HierarchicalLifetimeManager());
+            //childContainer.RegisterType<ISpotTileViewModelBehaviour, MonitorFakePairBehaviour>("MonitorFakePairBehaviour", new HierarchicalLifetimeManager());
+            //childContainer.RegisterType<ISpotTileViewModelBehaviour, OkCommandBehaviour>("OkCommandBehaviour", new HierarchicalLifetimeManager());
+            //childContainer.RegisterType<ISpotTileViewModelBehaviour, TimeoutBehaviour>("TimeoutBehaviour", new HierarchicalLifetimeManager());
+            childContainer.RegisterType<ISpotTileViewModelBehaviour, LoadFakeSpotCCYPairsBehaviour>(nameof(LoadFakeSpotCCYPairsBehaviour), new HierarchicalLifetimeManager());
+            childContainer.RegisterType<ISpotTileViewModelBehaviour, MonitorFakePairBehaviour>(nameof(MonitorFakePairBehaviour), new HierarchicalLifetimeManager());
+            childContainer.RegisterType<ISpotTileViewModelBehaviour, OkCommandBehaviour>(nameof(OkCommandBehaviour), new HierarchicalLifetimeManager());
+            childContainer.RegisterType<ISpotTileViewModelBehaviour, TimeoutBehaviour>(nameof(TimeoutBehaviour), new HierarchicalLifetimeManager());
+
             //services
             childContainer.RegisterType<IFakeSpotRateProvider, FakeSpotRateProvider>(new HierarchicalLifetimeManager());
 
