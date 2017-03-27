@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Practices.Prism.Regions;
 using WpfBehaviours.Infrastructure.Services;
 using WpfBehaviours.Infrastructure.ViewModel;
+using Prism.Regions;
 
 namespace WpfBehaviours.Modules.Dealing.ViewModels
 {

@@ -1,4 +1,4 @@
-﻿using Microsoft.Practices.Prism.Regions;
+﻿using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,22 +48,22 @@ namespace WpfBehaviours.Modules.Dealing.ViewModels
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
-            Guid uniqueIdParam = Guid.Parse(navigationContext.Parameters["UniqueId"]);
+            Guid uniqueIdParam = Guid.Parse(navigationContext.Parameters["UniqueId"].ToString());
             return uniqueIdParam == uniqueId;
         }
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-           
+
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            this.uniqueId = Guid.Parse(navigationContext.Parameters["UniqueId"]);
+            this.uniqueId = Guid.Parse(navigationContext.Parameters["UniqueId"].ToString());
         }
 
 
-       
+
 
         public List<string> FakeSpotPairs
         {
@@ -83,7 +83,7 @@ namespace WpfBehaviours.Modules.Dealing.ViewModels
             }
         }
 
- 
+
         public DateTime SelectedDate
         {
             get { return this.selectedDate; }
@@ -130,9 +130,9 @@ namespace WpfBehaviours.Modules.Dealing.ViewModels
             }
         }
 
-        
-        
-        
+
+
+
 
         public IReactiveCommand OkCommand { get; set; }
         public RateViewModel RateViewModel { get; private set; }

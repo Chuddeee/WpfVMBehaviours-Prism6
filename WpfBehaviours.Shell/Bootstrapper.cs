@@ -6,14 +6,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Practices.Prism.Modularity;
-using Microsoft.Practices.Prism.Regions;
-using Microsoft.Practices.Prism.UnityExtensions;
 using Microsoft.Practices.Unity;
 using WpfBehaviours.Infrastructure.Services;
 using WpfBehaviours.Infrastructure.Regions;
 using WpfBehaviours.Modules.Dealing;
 using WpfBehaviours.ControlSet.Windows.Controls;
+using Prism.Unity;
+using Prism.Modularity;
+using Prism.Regions;
 
 namespace WpfBehaviours.Shell
 {
@@ -44,7 +44,6 @@ namespace WpfBehaviours.Shell
             Container.RegisterType<ISchedulerService, SchedulerService>(new ContainerControlledLifetimeManager());
             Container.RegisterType<IMessageBoxService, MessageBoxService>(new ContainerControlledLifetimeManager());
             Container.RegisterType<ShellViewModel>(new ContainerControlledLifetimeManager());
-
 
             //custom region stuff to support child container navigation
             Container.RegisterType<IRegionNavigationContentLoader, CustomRegionNavigationContentLoader>(new ContainerControlledLifetimeManager());

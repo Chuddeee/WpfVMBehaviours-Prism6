@@ -19,9 +19,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Windows;
-using Microsoft.Practices.Prism.Regions;
 using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
+using Prism.Regions;
+using Prism.Common;
 
 namespace WpfBehaviours.Infrastructure.Regions
 {
@@ -129,27 +130,33 @@ namespace WpfBehaviours.Infrastructure.Regions
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exception is marshalled to callback")]
         public void RequestNavigate(Uri target, Action<NavigationResult> navigationCallback)
         {
-            if (navigationCallback == null) throw new ArgumentNullException("navigationCallback");
-
-            try
-            {
-                this.DoNavigate(target, navigationCallback, null);
-            }
-            catch (Exception e)
-            {
-                this.NotifyNavigationFailed(new NavigationContext(this, target), navigationCallback, e);
-            }
+            this.RequestNavigate(target, navigationCallback, null);
         }
 
-
-        public void RequestNavigate(Uri target, Action<NavigationResult> navigationCallback, IUnityContainer containerToUse)
+        /// <summary>
+        /// Initiates navigation to the specified target.
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="navigationCallback">A callback to execute when the navigation request is completed.</param>
+        /// <param name="navigationParameters">The navigation parameters specific to the navigation request.</param>
+        public void RequestNavigate(Uri target, Action<NavigationResult> navigationCallback, NavigationParameters navigationParameters)
         {
-            if (navigationCallback == null) throw new ArgumentNullException("navigationCallback");
-            if (containerToUse == null) throw new ArgumentNullException("containerToUse");
+            RequestNavigate(target, navigationCallback, navigationParameters, null);
+        }
+        /// <summary>
+        /// Initiates navigation to the specified target.
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="navigationCallback">A callback to execute when the navigation request is completed.</param>
+        /// <param name="navigationParameters">The navigation parameters specific to the navigation request.</param>
+        public void RequestNavigate(Uri target, Action<NavigationResult> navigationCallback, NavigationParameters navigationParameters, IUnityContainer containerToUse)
+        {
+            if (navigationCallback == null)
+                throw new ArgumentNullException(nameof(navigationCallback));
 
             try
             {
-                this.DoNavigate(target, navigationCallback, containerToUse);
+                this.DoNavigate(target, navigationCallback, navigationParameters, containerToUse);
             }
             catch (Exception e)
             {
@@ -157,28 +164,22 @@ namespace WpfBehaviours.Infrastructure.Regions
             }
         }
 
-
-        private void DoNavigate(Uri source, Action<NavigationResult> navigationCallback, IUnityContainer containerToUse)
+        private void DoNavigate(Uri source, Action<NavigationResult> navigationCallback, NavigationParameters navigationParameters, IUnityContainer containerToUse)
         {
             if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
+                throw new ArgumentNullException(nameof(source));
 
             if (this.Region == null)
-            {
                 throw new InvalidOperationException("Navigation cannot proceed until a region is set for the RegionNavigationService.");
-            }
 
-            this.currentNavigationContext = new NavigationContext(this, source);
+            this.currentNavigationContext = new NavigationContext(this, source, navigationParameters);
 
             // starts querying the active views
             RequestCanNavigateFromOnCurrentlyActiveView(
                 this.currentNavigationContext,
                 navigationCallback,
                 this.Region.ActiveViews.ToArray(),
-                0,
-                containerToUse);
+                0, containerToUse);
         }
 
         private void RequestCanNavigateFromOnCurrentlyActiveView(
@@ -221,7 +222,7 @@ namespace WpfBehaviours.Infrastructure.Regions
                         navigationCallback,
                         activeViews,
                         currentViewIndex,
-                        containerToUse);
+                       containerToUse);
                 }
             }
             else
@@ -284,6 +285,7 @@ namespace WpfBehaviours.Infrastructure.Regions
             try
             {
                 NotifyActiveViewsNavigatingFrom(navigationContext, activeViews);
+
                 object view = null;
                 if (containerToUse == null)
                 {
@@ -296,10 +298,7 @@ namespace WpfBehaviours.Infrastructure.Regions
                         throw new InvalidOperationException("CustomRegionNavigationService.ExecuteNavigation method that takes a container may only be used with a CustomRegionNavigationContentLoader");
 
                     view = ((CustomRegionNavigationContentLoader)this.regionNavigationContentLoader).LoadContent(this.Region, navigationContext, containerToUse);
-
                 }
-
-
                 // Raise the navigating event just before activing the view.
                 this.RaiseNavigating(navigationContext);
 
@@ -308,10 +307,12 @@ namespace WpfBehaviours.Infrastructure.Regions
                 // Update the navigation journal before notifying others of navigaton
                 IRegionNavigationJournalEntry journalEntry = this.serviceLocator.GetInstance<IRegionNavigationJournalEntry>();
                 journalEntry.Uri = navigationContext.Uri;
+                journalEntry.Parameters = navigationContext.Parameters;
                 this.journal.RecordNavigation(journalEntry);
 
                 // The view can be informed of navigation
-                InvokeOnNavigationAwareElement(view, (n) => n.OnNavigatedTo(navigationContext));
+                Action<INavigationAware> action = (n) => n.OnNavigatedTo(navigationContext);
+                MvvmHelpers.ViewAndViewModelAction(view, action);
 
                 navigationCallback(new NavigationResult(navigationContext, true));
 
@@ -342,26 +343,7 @@ namespace WpfBehaviours.Infrastructure.Regions
         {
             foreach (var item in items)
             {
-                InvokeOnNavigationAwareElement(item, invocation);
-            }
-        }
-
-        private static void InvokeOnNavigationAwareElement(object item, Action<INavigationAware> invocation)
-        {
-            var navigationAwareItem = item as INavigationAware;
-            if (navigationAwareItem != null)
-            {
-                invocation(navigationAwareItem);
-            }
-
-            FrameworkElement frameworkElement = item as FrameworkElement;
-            if (frameworkElement != null)
-            {
-                INavigationAware navigationAwareDataContext = frameworkElement.DataContext as INavigationAware;
-                if (navigationAwareDataContext != null)
-                {
-                    invocation(navigationAwareDataContext);
-                }
+                MvvmHelpers.ViewAndViewModelAction(item, invocation);
             }
         }
     }

@@ -1,29 +1,12 @@
-﻿//===================================================================================
-// Microsoft patterns & practices
-// Composite Application Guidance for Windows Presentation Foundation and Silverlight
-//===================================================================================
-// Copyright (c) Microsoft Corporation.  All rights reserved.
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY
-// OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT
-// LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-// FITNESS FOR A PARTICULAR PURPOSE.
-//===================================================================================
-// The example companies, organizations, products, domain names,
-// e-mail addresses, logos, people, places, and events depicted
-// herein are fictitious.  No association with any real company,
-// organization, product, domain name, email address, logo, person,
-// places, or events is intended or should be inferred.
-//===================================================================================
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
-using Microsoft.Practices.Prism;
-using Microsoft.Practices.Prism.Properties;
-using Microsoft.Practices.Prism.Regions;
 using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
+using Prism.Regions;
+using Prism.Common;
 
 namespace WpfBehaviours.Infrastructure.Regions
 {
@@ -44,7 +27,6 @@ namespace WpfBehaviours.Infrastructure.Regions
             this.serviceLocator = serviceLocator;
         }
 
-
         /// <summary>
         /// Gets the view to which the navigation request represented by <paramref name="navigationContext"/> applies.
         /// </summary>
@@ -61,13 +43,16 @@ namespace WpfBehaviours.Infrastructure.Regions
         public object LoadContent(IRegion region, NavigationContext navigationContext)
         {
             return LoadContent(region, navigationContext, null);
+
         }
-
-
         public object LoadContent(IRegion region, NavigationContext navigationContext, IUnityContainer containerToUse)
         {
-            if (region == null) throw new ArgumentNullException("region");
-            if (navigationContext == null) throw new ArgumentNullException("navigationContext");
+
+            if (region == null)
+                throw new ArgumentNullException(nameof(region));
+
+            if (navigationContext == null)
+                throw new ArgumentNullException(nameof(navigationContext));
 
             string candidateTargetContract = this.GetContractFromNavigationContext(navigationContext);
 
@@ -101,8 +86,8 @@ namespace WpfBehaviours.Infrastructure.Regions
                 return view;
             }
 
+            //view = this.CreateNewRegionItem(candidateTargetContract);
             view = this.CreateNewRegionItem(candidateTargetContract, containerToUse);
-
             region.Add(view);
 
             return view;
@@ -143,7 +128,7 @@ namespace WpfBehaviours.Infrastructure.Regions
         /// <returns>The candidate contract to seek within the <see cref="IRegion"/> and to use, if not found, when resolving from the container.</returns>
         protected virtual string GetContractFromNavigationContext(NavigationContext navigationContext)
         {
-            if (navigationContext == null) throw new ArgumentNullException("navigationContext");
+            if (navigationContext == null) throw new ArgumentNullException(nameof(navigationContext));
 
             var candidateTargetContract = UriParsingHelper.GetAbsolutePath(navigationContext.Uri);
             candidateTargetContract = candidateTargetContract.TrimStart('/');
@@ -158,7 +143,9 @@ namespace WpfBehaviours.Infrastructure.Regions
         /// <returns>An enumerable of candidate objects from the <see cref="IRegion"/></returns>
         protected virtual IEnumerable<object> GetCandidatesFromRegion(IRegion region, string candidateNavigationContract)
         {
-            if (region == null) throw new ArgumentNullException("region");
+            if (region == null)
+                throw new ArgumentNullException(nameof(region));
+
             return region.Views.Where(v =>
                 string.Equals(v.GetType().Name, candidateNavigationContract, StringComparison.Ordinal) ||
                 string.Equals(v.GetType().FullName, candidateNavigationContract, StringComparison.Ordinal));

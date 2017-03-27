@@ -1,7 +1,4 @@
 ﻿using System;
-using Microsoft.Practices.Prism;
-using Microsoft.Practices.Prism.Modularity;
-using Microsoft.Practices.Prism.Regions;
 using Microsoft.Practices.Unity;
 using WpfBehaviours.Infrastructure.ExtensionMethods;
 using WpfBehaviours.Infrastructure.Messages;
@@ -13,7 +10,8 @@ using WpfBehaviours.Modules.Dealing.Services;
 using WpfBehaviours.Modules.Dealing.ViewModels;
 using WpfBehaviours.Modules.Dealing.ViewModels.Controllers;
 using WpfBehaviours.Modules.Dealing.ViewModels.Controllers.Behaviours;
-
+using Prism.Modularity;
+using Prism.Regions;
 
 namespace WpfBehaviours.Modules.Dealing
 {
@@ -55,7 +53,7 @@ namespace WpfBehaviours.Modules.Dealing
         {
             if (regionNavigationCapacityChecker.IsNavigationAllowedForRegion(RegionNames.MainRegion))
             {
-                UriQuery parameters = new UriQuery();
+                NavigationParameters parameters = new NavigationParameters();
                 parameters.Add("UniqueId", Guid.NewGuid().ToString());
 
                 IUnityContainer childContainer = ConfigureSpotTileContainer();
